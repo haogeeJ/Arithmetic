@@ -19,6 +19,7 @@ var (
 	r            int64
 	exercisefile string
 	answerfile   string
+	Divedzero    bool
 )
 
 func randData(l *list.List, r int64, p *Problem) {
@@ -102,7 +103,7 @@ func getProblem() (*Problem, bool) {
 		case 1:
 			s.s = '-'
 		case 2:
-			s.s = '*'
+			s.s = '×'
 		case 3:
 			s.s = '÷'
 		}
@@ -127,6 +128,7 @@ func getProblem() (*Problem, bool) {
 	//})
 	//fmt.Println(p.formulaTostring)
 	p.TransPostfixExpress()
+	Divedzero = false
 	ret := p.Cal()
 	if _, ok := m[ret]; ok || ret.Num < 0 || ret.Nume < 0 || ret.Deno < 0 {
 		return nil, false
@@ -162,26 +164,38 @@ func Usage() {
 	}
 }
 
-func readLine(filename string) ([]string, error) {
+func readLine(filename string) ([]*Problem, error) {
 	data, err := ioutil.ReadFile(filename)
 	if err != nil {
 		//fmt.Println(err.Error())
 		return nil, err
 	}
-	s := make([]string, 0)
+	s := make([]*Problem, 0)
 	for _, list := range strings.Split(string(data), "\n") {
-		s = append(s, list)
+		l := strings.Split(list, ".")
+		p := NewProblem()
+		p.formulaTostring = l[1]
+		p.TransStringToFormula()
+		p.TransPostfixExpress()
+		//fmt.Println(p.formula.Len())
+		//for ele := p.formula.Front(); ele != nil; ele = ele.Next() {
+		//	fmt.Println(ele.Value.(*Entry).value.(*FAL).String())
+		//}
+		p.answer = *p.Cal()
+
+		s = append(s, p)
 	}
 	return s, nil
 }
 
-func writeGrade(exercise []string, answer []string) {
+func writeGrade(exercise []*Problem, answer []string) {
 	var (
 		correct = make([]int, 0)
 		wrong   = make([]int, 0)
 	)
 	for index, v := range exercise {
-		if answer[index] == v {
+		//fmt.Println(v.formulaTostring, v.answer)
+		if answer[index] == v.answer.String() {
 			correct = append(correct, index+1)
 		} else {
 			wrong = append(wrong, index+1)
@@ -203,14 +217,18 @@ func writeGrade(exercise []string, answer []string) {
 	for i := 0; i < len(wrong)-1; i++ {
 		fff.Write([]byte(strconv.Itoa(wrong[i]) + ","))
 	}
-	fff.Write([]byte(strconv.Itoa(wrong[len(wrong)-1]) + ")"))
+	if len(wrong) > 0 {
+		fff.Write([]byte(strconv.Itoa(wrong[len(wrong)-1]) + ")"))
+	} else {
+		fff.Write([]byte(")"))
+	}
 }
 
 func generateProblems() {
-	f, _ := os.OpenFile("exercisefile.txt",
+	f, _ := os.OpenFile("exercise.txt",
 		os.O_CREATE|os.O_RDWR|os.O_APPEND|os.O_TRUNC, 0777) //读写模式打开，写入追加
 	defer f.Close()
-	ff, _ := os.OpenFile("answerfile.txt",
+	ff, _ := os.OpenFile("answer.txt",
 		os.O_CREATE|os.O_RDWR|os.O_APPEND|os.O_TRUNC, 0777) //读写模式打开，写入追加
 	defer ff.Close()
 	for i := 0; i < n; {
@@ -219,8 +237,8 @@ func generateProblems() {
 			problemList = append(problemList, problem)
 			i++
 			//fmt.Println(problem.formulaTostring, problem.answer)
-			f.Write([]byte(strconv.Itoa(i) + "、" + problem.formulaTostring))
-			ff.Write([]byte(strconv.Itoa(i) + "、" + problem.formulaTostring + problem.answer.String()))
+			f.Write([]byte(strconv.Itoa(i) + "." + problem.formulaTostring))
+			ff.Write([]byte(strconv.Itoa(i) + "." + problem.formulaTostring + problem.answer.String()))
 			if i < n {
 				f.Write([]byte("\n"))
 				ff.Write([]byte("\n"))
@@ -230,6 +248,7 @@ func generateProblems() {
 }
 
 func main() {
+	s := time.Now()
 	rand.Seed(time.Now().UnixNano())
 	len := len(os.Args)
 	//fmt.Println(len)
@@ -247,11 +266,18 @@ func main() {
 			fmt.Println(err.Error())
 			return
 		}
-		answer, err := readLine(answerfile)
+
+		data, err := ioutil.ReadFile("answerfile.txt")
 		if err != nil {
 			fmt.Println(err.Error())
 			return
 		}
+		answer := make([]string, 0)
+		for _, list := range strings.Split(string(data), "\n") {
+			l := strings.Split(list, ".")
+			answer = append(answer, l[1])
+		}
 		writeGrade(exercise, answer)
 	}
+	fmt.Println(time.Since(s))
 }

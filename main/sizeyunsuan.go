@@ -2,6 +2,8 @@ package main
 
 import (
 	"container/list"
+	"strconv"
+	"strings"
 )
 
 type Entry struct {
@@ -18,6 +20,14 @@ type Problem struct {
 	postfixExpress  *list.List
 	formulaTostring string
 	answer          FAL
+}
+
+func NewProblem() *Problem {
+	return &Problem{
+		formula:        list.New(),
+		postfixExpress: list.New(),
+		answer:         FAL{},
+	}
 }
 
 //func (p *Problem) Add(value Value, kind int) {
@@ -73,10 +83,10 @@ func (p *Problem) TransPostfixExpress() {
 				}
 				continue
 			}
-			if symbol.s == '*' || symbol.s == '÷' {
+			if symbol.s == '×' || symbol.s == '÷' {
 				for val := ll.Back(); val != nil; val = ll.Back() {
 					x := val.Value.(*Entry).value.(*Sign)
-					if x.s == '÷' || x.s == '*' {
+					if x.s == '÷' || x.s == '×' {
 						p.postfixExpress.PushBack(val.Value.(*Entry))
 						ll.Remove(val)
 					} else {
@@ -122,7 +132,7 @@ func (p *Problem) Cal() *FAL {
 				fal2 = Sub(fal2, fal1)
 			case '+':
 				fal2 = Add(fal2, fal1)
-			case '*':
+			case '×':
 				fal2 = Mul(fal2, fal1)
 			case '÷':
 				fal2 = Div(fal2, fal1)
@@ -136,4 +146,74 @@ func (p *Problem) Cal() *FAL {
 	}
 	//fmt.Println(cnt)
 	return ll.Back().Value.(*Entry).value.(*FAL)
+}
+
+func Split(r rune) bool {
+	return r == '+' || r == '-' || r == '×' || r == '÷' || r == '(' || r == ')' || r == '='
+}
+func Split1(r rune) bool {
+	return r == '\'' || r == '/'
+}
+func (p *Problem) TransStringToFormula() {
+	a := strings.FieldsFunc(p.formulaTostring, Split)
+	var cnt = 0
+	for _, v := range a {
+		var cnt1 = 0
+		for _, v := range p.formulaTostring {
+			if v == '-' || v == '+' || v == '×' || v == '÷' || v == '(' || v == ')' {
+				cnt1++
+				if cnt1 > cnt {
+					//fmt.Println(v)
+					if v == '(' {
+						p.formula.PushBack(&Entry{
+							kind:  2,
+							value: &Sign{s: v},
+						})
+						//fmt.Println(v)
+						cnt++
+					}
+					break
+				}
+			}
+		}
+		f := new(FAL)
+		s := strings.FieldsFunc(v, Split1)
+		if len(s) == 1 {
+			f.Num, _ = strconv.ParseInt(s[0], 10, 64)
+			f.Nume = 0
+			f.Deno = 1
+		} else if len(s) == 2 {
+			f.Num = 0
+			f.Nume, _ = strconv.ParseInt(s[0], 10, 64)
+			f.Deno, _ = strconv.ParseInt(s[1], 10, 64)
+		} else {
+			f.Num, _ = strconv.ParseInt(s[0], 10, 64)
+			f.Nume, _ = strconv.ParseInt(s[1], 10, 64)
+			f.Deno, _ = strconv.ParseInt(s[2], 10, 64)
+		}
+		//fmt.Println(f.String() + "!!!")
+		p.formula.PushBack(&Entry{
+			kind:  1,
+			value: f,
+		})
+		cnt1 = 0
+		for _, v := range p.formulaTostring {
+			if v == '-' || v == '+' || v == '×' || v == '÷' || v == '(' || v == ')' {
+				cnt1++
+				if cnt1 > cnt {
+					//fmt.Println(v)
+					p.formula.PushBack(&Entry{
+						kind:  2,
+						value: &Sign{s: v},
+					})
+					cnt++
+					if v == ')' {
+						continue
+					}
+					break
+				}
+			}
+		}
+	}
+	//fmt.Println(p.formulaTostring, p.formula.Len())
 }

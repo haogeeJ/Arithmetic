@@ -6,9 +6,14 @@ func fakefenshu(v *FAL) {
 }
 
 func realfenshu(v *FAL) {
+	if v.Deno == 0 {
+		Divedzero = true
+		return
+	}
 	v.Num = v.Nume / v.Deno
 	v.Nume %= v.Deno
 }
+
 func Add(v1 *FAL, v2 *FAL) *FAL {
 	fakefenshu(v1)
 	fakefenshu(v2)

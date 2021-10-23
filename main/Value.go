@@ -15,7 +15,7 @@ type FAL struct {
 type PositiveInt uint
 
 type Sign struct {
-	s byte
+	s int32
 }
 
 func (p PositiveInt) Len() int {
@@ -53,6 +53,10 @@ func Model(nd ...int64) *FAL { // 创建一个分数(分子，分母)，分母�
 
 // Broadsheet  .阔张
 func (s *FAL) broad(lcm int64) {
+	if s.Deno <= 0 {
+		Divedzero = true
+		return
+	}
 	s.Nume = s.Nume * (lcm / s.Deno)
 	s.Deno = lcm
 }
@@ -105,11 +109,6 @@ func (s *FAL) Div(f *FAL) *FAL { // 除法
 	s.Mul(Model(f.Num, f.Deno, f.Nume))
 	s.offset()
 	return s
-}
-
-// Verdict Calculation results
-func (s *FAL) Verdict() float64 { // 计算结果
-	return float64(s.Nume) / float64(s.Deno)
 }
 
 func Gcd(x int64, y int64) int64 {
