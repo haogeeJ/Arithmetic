@@ -247,6 +247,27 @@ func generateProblems() {
 	}
 }
 
+func check() {
+
+	exercise, err := readLine(exercisefile)
+	if err != nil {
+		fmt.Println(err.Error())
+		return
+	}
+
+	data, err := ioutil.ReadFile("answerfile.txt")
+	if err != nil {
+		fmt.Println(err.Error())
+		return
+	}
+	answer := make([]string, 0)
+	for _, list := range strings.Split(string(data), "\n") {
+		l := strings.Split(list, ".")
+		answer = append(answer, l[1])
+	}
+	writeGrade(exercise, answer)
+
+}
 func main() {
 	s := time.Now()
 	rand.Seed(time.Now().UnixNano())
@@ -260,24 +281,27 @@ func main() {
 		generateProblems()
 	}
 	if exercisefile != "" && answerfile != "" {
-
-		exercise, err := readLine(exercisefile)
-		if err != nil {
-			fmt.Println(err.Error())
-			return
-		}
-
-		data, err := ioutil.ReadFile("answerfile.txt")
-		if err != nil {
-			fmt.Println(err.Error())
-			return
-		}
-		answer := make([]string, 0)
-		for _, list := range strings.Split(string(data), "\n") {
-			l := strings.Split(list, ".")
-			answer = append(answer, l[1])
-		}
-		writeGrade(exercise, answer)
+		check()
 	}
+	//if exercisefile != "" && answerfile != "" {
+	//
+	//	exercise, err := readLine(exercisefile)
+	//	if err != nil {
+	//		fmt.Println(err.Error())
+	//		return
+	//	}
+	//
+	//	data, err := ioutil.ReadFile("answerfile.txt")
+	//	if err != nil {
+	//		fmt.Println(err.Error())
+	//		return
+	//	}
+	//	answer := make([]string, 0)
+	//	for _, list := range strings.Split(string(data), "\n") {
+	//		l := strings.Split(list, ".")
+	//		answer = append(answer, l[1])
+	//	}
+	//	writeGrade(exercise, answer)
+	//}
 	fmt.Println(time.Since(s))
 }
