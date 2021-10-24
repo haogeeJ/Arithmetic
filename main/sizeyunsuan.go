@@ -37,6 +37,7 @@ func NewProblem() *Problem {
 //	})
 //}
 
+//将运算式转换成逆波兰式
 func (p *Problem) TransPostfixExpress() {
 	var ll *list.List
 	ll = new(list.List)
@@ -106,6 +107,7 @@ func (p *Problem) TransPostfixExpress() {
 	}
 }
 
+//计算结果
 func (p *Problem) Cal() *FAL {
 	var ll *list.List
 	//cnt := 0
@@ -113,7 +115,7 @@ func (p *Problem) Cal() *FAL {
 	for ele := p.postfixExpress.Front(); ele != nil; ele = ele.Next() {
 		//cnt++
 		kv := ele.Value.(*Entry)
-		if kv.kind == 1 {
+		if kv.kind == 1 { //kind=1，代表该元素不是运算符号
 			ll.PushBack(kv)
 		} else {
 			//fmt.Println(ll.Len(), kv.value.(*Sign).s)
@@ -137,7 +139,7 @@ func (p *Problem) Cal() *FAL {
 			case '÷':
 				fal2 = Div(fal2, fal1)
 			}
-			//fmt.Println(fal2)
+			//将结果压入栈中
 			ll.PushBack(&Entry{
 				kind:  1,
 				value: fal2,
@@ -148,12 +150,7 @@ func (p *Problem) Cal() *FAL {
 	return ll.Back().Value.(*Entry).value.(*FAL)
 }
 
-func Split(r rune) bool {
-	return r == '+' || r == '-' || r == '×' || r == '÷' || r == '(' || r == ')' || r == '='
-}
-func Split1(r rune) bool {
-	return r == '\'' || r == '/'
-}
+//将字符串转换成可运算的运算式
 func (p *Problem) TransStringToFormula() {
 	a := strings.FieldsFunc(p.formulaTostring, Split)
 	var cnt = 0
@@ -216,4 +213,11 @@ func (p *Problem) TransStringToFormula() {
 		}
 	}
 	//fmt.Println(p.formulaTostring, p.formula.Len())
+}
+
+func Split(r rune) bool {
+	return r == '+' || r == '-' || r == '×' || r == '÷' || r == '(' || r == ')' || r == '='
+}
+func Split1(r rune) bool {
+	return r == '\'' || r == '/'
 }

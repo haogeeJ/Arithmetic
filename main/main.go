@@ -224,6 +224,7 @@ func writeGrade(exercise []*Problem, answer []string) {
 	}
 }
 
+//生成题目
 func generateProblems() {
 	f, _ := os.OpenFile("exercise.txt",
 		os.O_CREATE|os.O_RDWR|os.O_APPEND|os.O_TRUNC, 0777) //读写模式打开，写入追加
@@ -247,6 +248,7 @@ func generateProblems() {
 	}
 }
 
+//阅卷
 func check() {
 
 	exercise, err := readLine(exercisefile)
@@ -268,40 +270,23 @@ func check() {
 	writeGrade(exercise, answer)
 
 }
+
 func main() {
 	s := time.Now()
 	rand.Seed(time.Now().UnixNano())
 	len := len(os.Args)
-	//fmt.Println(len)
+	//必须输入两个参数-n -r或者-e -a
 	if len < 5 {
 		Usage()
 	}
 	ParseArgs()
+	//生成题目
 	if n > 0 {
 		generateProblems()
 	}
+	//阅卷模式
 	if exercisefile != "" && answerfile != "" {
 		check()
 	}
-	//if exercisefile != "" && answerfile != "" {
-	//
-	//	exercise, err := readLine(exercisefile)
-	//	if err != nil {
-	//		fmt.Println(err.Error())
-	//		return
-	//	}
-	//
-	//	data, err := ioutil.ReadFile("answerfile.txt")
-	//	if err != nil {
-	//		fmt.Println(err.Error())
-	//		return
-	//	}
-	//	answer := make([]string, 0)
-	//	for _, list := range strings.Split(string(data), "\n") {
-	//		l := strings.Split(list, ".")
-	//		answer = append(answer, l[1])
-	//	}
-	//	writeGrade(exercise, answer)
-	//}
 	fmt.Println(time.Since(s))
 }

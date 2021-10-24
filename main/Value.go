@@ -6,21 +6,18 @@ type Value interface {
 	Len() int
 }
 
+//分数
 type FAL struct {
 	Num  int64
 	Nume int64
 	Deno int64
 }
 
-type PositiveInt uint
-
+//运算符
 type Sign struct {
 	s int32
 }
 
-func (p PositiveInt) Len() int {
-	return 0
-}
 func (s FAL) Len() int {
 	return 0
 }
